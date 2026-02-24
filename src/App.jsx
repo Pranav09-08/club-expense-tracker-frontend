@@ -1,7 +1,10 @@
+import { Button } from "@/components/ui/button"
+
 function App() {
-  
   return (
-     <h1 className="text-9xl font-bold text-center">Hello</h1>
+    <div className="min-h-screen flex items-center justify-center">
+      <Button>shadcn Ready 🚀</Button>
+    </div>
   )
 }
 
