@@ -9,14 +9,12 @@ export default function Topbar() {
   };
 
   return (
-    <header className="flex items-center justify-between border-b p-4 bg-white">
-      <h1 className="font-semibold">Dashboard</h1>
+    <header className="h-16 bg-black text-white flex items-center justify-between px-6 border-b border-white/10">
+      <h1 className="font-semibold text-lg">Dashboard</h1>
 
-      <div className="flex items-center gap-3">
-        <span className="text-sm text-muted-foreground">
-          {user?.email}
-        </span>
-        <Button variant="outline" onClick={logout}>
+      <div className="flex items-center gap-4">
+        <span className="text-sm text-gray-300">{user?.email}</span>
+        <Button variant="secondary" onClick={logout}>
           Logout
         </Button>
       </div>
