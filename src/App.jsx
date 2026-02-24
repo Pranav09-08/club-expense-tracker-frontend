@@ -1,10 +1,11 @@
-import { Button } from "@/components/ui/button"
+import { BrowserRouter } from "react-router-dom"
+import AppRoutes from "./routes"
 
 function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <Button>shadcn Ready 🚀</Button>
-    </div>
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
   )
 }
 
