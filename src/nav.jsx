@@ -41,8 +41,8 @@ export const getNavigation = (role) => {
         group: "Users",
         icon: Users,
         items: [
-          { label: "Add User", to: "/admin/users/add", icon: User },
-          { label: "Manage Users", to: "/admin/users", icon: Users },
+          { label: "Create Coordinator", to: "/admin/coordinators/add", icon: User },
+          { label: "Manage Coordinators", to: "/admin/coordinators", icon: Users },
         ],
       },
 
@@ -66,19 +66,11 @@ export const getNavigation = (role) => {
       { label: "Profile", to: "/coordinator/profile", icon: User },
 
       {
-        group: "Clubs",
+        group: "Leads",
         icon: Folder,
         items: [
-          { label: "My Clubs", to: "/coordinator/clubs", icon: Folder },
-          { label: "Approve Expenses", to: "/coordinator/approvals", icon: CheckCircle },
-        ],
-      },
-
-      {
-        group: "Reports",
-        icon: BarChart3,
-        items: [
-          { label: "Club Reports", to: "/coordinator/reports", icon: FileText },
+          { label: "Create Lead", to: "/coordinator/leads/add", icon: ClipboardList },
+          { label: "Manage Leads", to: "/coordinator/leads", icon: Users },
         ],
       },
 

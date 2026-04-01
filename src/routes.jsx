@@ -7,7 +7,13 @@ import LoginPage from "@/pages/LoginPage";
 
 /* Dashboards */
 import AdminDashboard from "@/pages/admin/Dashboard";
+import CreateClubPage from "@/pages/admin/CreateClubPage";
+import CreateCoordinatorPage from "@/pages/admin/CreateCoordinatorPage";
+import ManageClubsPage from "@/pages/admin/ManageClubsPage";
+import ManageCoordinatorsPage from "@/pages/admin/ManageCoordinatorsPage";
 import CoordinatorDashboard from "@/pages/coordinator/Dashboard";
+import CreateLeadPage from "@/pages/coordinator/CreateLeadPage";
+import ManageLeadsPage from "@/pages/coordinator/ManageLeadsPage";
 import ClubLeadDashboard from "@/pages/clubLead/Dashboard";
 import FinanceDashboard from "@/pages/financeLead/Dashboard";
 import MemberDashboard from "@/pages/member/Dashboard";
@@ -28,15 +34,29 @@ export default function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
 
       {/* 🔹 Layout Wrapper */}
-      <Route element={<DashboardLayout />}>
+      <Route
+        element={(
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        )}
+      >
 
         {/* ADMIN */}
         <Route path="/admin-dashboard" element={<ProtectedRoute roles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
         <Route path="/admin/profile" element={<ProtectedRoute roles={["admin"]}><ProfilePage /></ProtectedRoute>} />
+        <Route path="/admin/clubs/add" element={<ProtectedRoute roles={["admin"]}><CreateClubPage /></ProtectedRoute>} />
+        <Route path="/admin/clubs" element={<ProtectedRoute roles={["admin"]}><ManageClubsPage /></ProtectedRoute>} />
+        <Route path="/admin/coordinators/add" element={<ProtectedRoute roles={["admin"]}><CreateCoordinatorPage /></ProtectedRoute>} />
+        <Route path="/admin/coordinators" element={<ProtectedRoute roles={["admin"]}><ManageCoordinatorsPage /></ProtectedRoute>} />
+        <Route path="/admin/users/add" element={<ProtectedRoute roles={["admin"]}><CreateCoordinatorPage /></ProtectedRoute>} />
+        <Route path="/admin/users" element={<ProtectedRoute roles={["admin"]}><ManageCoordinatorsPage /></ProtectedRoute>} />
 
         {/* COORDINATOR */}
         <Route path="/coordinator-dashboard" element={<ProtectedRoute roles={["coordinator"]}><CoordinatorDashboard /></ProtectedRoute>} />
         <Route path="/coordinator/profile" element={<ProtectedRoute roles={["coordinator"]}><ProfilePage /></ProtectedRoute>} />
+        <Route path="/coordinator/leads/add" element={<ProtectedRoute roles={["coordinator"]}><CreateLeadPage /></ProtectedRoute>} />
+        <Route path="/coordinator/leads" element={<ProtectedRoute roles={["coordinator"]}><ManageLeadsPage /></ProtectedRoute>} />
 
         {/* CLUB LEAD */}
         <Route path="/club-lead-dashboard" element={<ProtectedRoute roles={["club_lead"]}><ClubLeadDashboard /></ProtectedRoute>} />

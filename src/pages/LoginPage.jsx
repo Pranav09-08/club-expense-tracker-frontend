@@ -1,13 +1,30 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { login } from "@/api/authAPI";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleLogin = () => {
-    localStorage.setItem("user", JSON.stringify({ email: email.trim(), role: "admin" }));
-    window.location.href = "/admin-dashboard";
+  const handleLogin = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const payload = {
+        email: email.trim(),
+        password: password.trim(),
+      };
+
+      const result = await login(payload);
+      window.location.href = result.dashboardPath;
+    } catch (err) {
+      setError(err.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -39,12 +56,18 @@ export default function LoginPage() {
               />
             </div>
 
+            {error && (
+              <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {error}
+              </div>
+            )}
+
             <button
               onClick={handleLogin}
-              disabled={!email.trim() || !password.trim()}
+              disabled={!email.trim() || !password.trim() || loading}
               className="w-full rounded-lg bg-slate-900 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Login to Dashboard
+              {loading ? "Logging in..." : "Login to Dashboard"}
             </button>
 
             <p className="text-center text-sm text-slate-500">

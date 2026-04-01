@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
+import { logout } from "@/api/authAPI";
 
 export default function Topbar({ sidebarOpen }) {
   const user = JSON.parse(localStorage.getItem("user"));
 
-  const logout = () => {
-    localStorage.removeItem("user");
+  const handleLogout = async () => {
+    await logout();
     window.location.href = "/login";
   };
 
@@ -21,7 +22,7 @@ export default function Topbar({ sidebarOpen }) {
           <p className="text-xs uppercase tracking-wide text-slate-400">Logged in as</p>
           <p className="text-sm text-slate-200">{user?.email || "guest"}</p>
         </div>
-        <Button variant="secondary" onClick={logout}>
+        <Button variant="secondary" onClick={handleLogout}>
           Logout
         </Button>
       </div>
