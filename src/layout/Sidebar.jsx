@@ -1,18 +1,16 @@
 import { getNavigation } from "../nav";
 import { Link, useLocation } from "react-router-dom";
-import { useState } from "react";
+
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-export default function Sidebar() {
+export default function Sidebar({ open, setOpen }) {
   const user = JSON.parse(localStorage.getItem("user"));
   const navItems = getNavigation(user?.role || "guest");
   const location = useLocation();
 
-  const [open, setOpen] = useState(true);
-
   return (
     <>
-      {/* 🔹 Toggle Button (always visible when closed) */}
+      {/* Toggle Button (always visible when closed) */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
@@ -22,16 +20,16 @@ export default function Sidebar() {
         </button>
       )}
 
-      {/* 🔹 Sidebar */}
+      {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-screen bg-black text-white flex flex-col transition-transform duration-300 z-40 ${
+        className={`fixed top-0 left-0 h-screen bg-black text-white flex flex-col transition-transform duration-300 z-40 shadow-2xl ${
           open ? "translate-x-0 w-72" : "-translate-x-full w-72"
         }`}
+        style={{ boxShadow: open ? "2px 0 24px 0 rgba(0,0,0,0.15)" : "none" }}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
-          <h1 className="font-semibold text-lg">Club Expense</h1>
-
+          <h1 className="font-semibold text-lg tracking-wide">Club Expense</h1>
           <button
             onClick={() => setOpen(false)}
             className="p-1 rounded hover:bg-white/10"
@@ -45,20 +43,18 @@ export default function Sidebar() {
           {navItems.map((item, index) =>
             item.group ? (
               <div key={index}>
-                <p className="text-xs text-gray-400 px-3 mt-4 mb-1 uppercase">
+                <p className="text-xs text-gray-400 px-3 mt-4 mb-1 uppercase tracking-wider">
                   {item.group}
                 </p>
-
                 {item.items.map((sub, i) => {
                   const Icon = sub.icon;
-
                   return (
                     <Link
                       key={i}
                       to={sub.to}
-                      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition ${
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition font-medium ${
                         location.pathname === sub.to
-                          ? "bg-white text-black"
+                          ? "bg-white text-black shadow"
                           : "hover:bg-white/10"
                       }`}
                     >
@@ -71,14 +67,13 @@ export default function Sidebar() {
             ) : (
               (() => {
                 const Icon = item.icon;
-
                 return (
                   <Link
                     key={index}
                     to={item.to}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg transition ${
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg transition font-medium ${
                       location.pathname === item.to
-                        ? "bg-white text-black"
+                        ? "bg-white text-black shadow"
                         : "hover:bg-white/10"
                     }`}
                   >
@@ -93,4 +88,4 @@ export default function Sidebar() {
       </aside>
     </>
   );
-}
+} 
