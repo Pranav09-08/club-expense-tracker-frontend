@@ -2,18 +2,8 @@ import { useEffect, useState } from "react";
 import { createLead, listLeads } from "@/api/authAPI";
 
 export default function Dashboard() {
-  const kpis = [
-    { label: "Assigned Clubs", value: "6" },
-    { label: "Pending Approvals", value: "11" },
-    { label: "Escalated Cases", value: "2" },
-    { label: "Approved This Week", value: "19" },
-  ];
-
-  const approvals = [
-    { id: "EXP-241", club: "Coding Club", amount: "₹5,600", priority: "High" },
-    { id: "EXP-238", club: "Drama Club", amount: "₹3,200", priority: "Medium" },
-    { id: "EXP-236", club: "Robotics Club", amount: "₹9,850", priority: "High" },
-  ];
+  const user = JSON.parse(localStorage.getItem("user"));
+  const activeClubId = user?.activeClubId;
 
   const [activeTab, setActiveTab] = useState("create-lead");
   const [leads, setLeads] = useState([]);
@@ -57,11 +47,34 @@ export default function Dashboard() {
     }
   };
 
+  const studentLeads = leads.filter(
+    (lead) => (lead.role_code || lead.roleCode) === "STUDENT_LEAD"
+  );
+  const financeLeads = leads.filter(
+    (lead) => (lead.role_code || lead.roleCode) === "FINANCE_LEAD"
+  );
+  const latestLeads = [...leads]
+    .sort((a, b) => {
+      const aTime = a.joined_at ? new Date(a.joined_at).getTime() : 0;
+      const bTime = b.joined_at ? new Date(b.joined_at).getTime() : 0;
+      return bTime - aTime;
+    })
+    .slice(0, 5);
+
+  const kpis = [
+    { label: "Active Club", value: activeClubId ? `Club #${activeClubId}` : "Not selected" },
+    { label: "Total Leads", value: String(leads.length) },
+    { label: "Student Leads", value: String(studentLeads.length) },
+    { label: "Finance Leads", value: String(financeLeads.length) },
+  ];
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">Coordinator Dashboard</h1>
-        <p className="text-sm text-slate-500">Review club requests, resolve bottlenecks, and maintain policy compliance.</p>
+        <h1 className="text-3xl font-bold text-slate-900">Faculty Coordinator Dashboard</h1>
+        <p className="text-sm text-slate-500">
+          Club-scoped control center for your assigned club: create leads, review lead structure, and monitor role distribution.
+        </p>
       </div>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -75,47 +88,49 @@ export default function Dashboard() {
 
       <section className="grid gap-4 lg:grid-cols-3">
         <div className="rounded-2xl border bg-white p-5 shadow-sm lg:col-span-2">
-          <h2 className="mb-4 text-lg font-semibold text-slate-900">Pending Approval Queue</h2>
+          <h2 className="mb-4 text-lg font-semibold text-slate-900">Latest Leads in Your Club</h2>
           <div className="space-y-3">
-            {approvals.map((item) => (
+            {latestLeads.map((item) => (
               <div key={item.id} className="flex items-center justify-between rounded-xl border bg-slate-50 p-3">
                 <div>
-                  <p className="text-sm font-semibold text-slate-900">{item.id} · {item.club}</p>
-                  <p className="text-sm text-slate-600">Requested amount: {item.amount}</p>
+                  <p className="text-sm font-semibold text-slate-900">{item.full_name || item.fullName}</p>
+                  <p className="text-sm text-slate-600">{item.email}</p>
                 </div>
-                <span className="rounded-full bg-white px-2 py-1 text-xs font-medium text-slate-700 border">{item.priority}</span>
+                <span className="rounded-full bg-white px-2 py-1 text-xs font-medium text-slate-700 border">
+                  {item.role_code || item.roleCode}
+                </span>
               </div>
             ))}
+            {latestLeads.length === 0 && (
+              <div className="rounded-xl border bg-slate-50 p-3 text-sm text-slate-600">
+                No leads created yet for this club.
+              </div>
+            )}
           </div>
         </div>
 
         <div className="rounded-2xl border bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-slate-900">Alerts</h2>
+          <h2 className="mb-4 text-lg font-semibold text-slate-900">Coordinator Focus</h2>
           <div className="space-y-3 text-sm text-slate-600">
-            <div className="rounded-xl border bg-slate-50 p-3">Robotics Club exceeded 80% monthly budget</div>
-            <div className="rounded-xl border bg-slate-50 p-3">2 requests missing invoice attachments</div>
-            <div className="rounded-xl border bg-slate-50 p-3">Finance follow-up required for 3 delayed payouts</div>
+            <div className="rounded-xl border bg-slate-50 p-3">Ensure at least one Student Lead is active</div>
+            <div className="rounded-xl border bg-slate-50 p-3">Ensure at least one Finance Lead is active</div>
+            <div className="rounded-xl border bg-slate-50 p-3">Review new lead accounts weekly</div>
           </div>
         </div>
       </section>
 
       <section className="rounded-2xl border bg-white p-5 shadow-sm">
-        <h2 className="mb-4 text-lg font-semibold text-slate-900">Club Snapshot</h2>
-        <div className="grid gap-3 md:grid-cols-3">
+        <h2 className="mb-4 text-lg font-semibold text-slate-900">Lead Role Distribution</h2>
+        <div className="grid gap-3 md:grid-cols-2">
           <div className="rounded-xl border p-4">
-            <p className="text-sm font-medium text-slate-700">Coding Club</p>
-            <p className="text-xs text-slate-500">Utilization</p>
-            <p className="text-lg font-bold text-slate-900">74%</p>
+            <p className="text-sm font-medium text-slate-700">Student Lead Coverage</p>
+            <p className="text-xs text-slate-500">In your active club</p>
+            <p className="text-lg font-bold text-slate-900">{studentLeads.length}</p>
           </div>
           <div className="rounded-xl border p-4">
-            <p className="text-sm font-medium text-slate-700">Drama Club</p>
-            <p className="text-xs text-slate-500">Utilization</p>
-            <p className="text-lg font-bold text-slate-900">61%</p>
-          </div>
-          <div className="rounded-xl border p-4">
-            <p className="text-sm font-medium text-slate-700">Robotics Club</p>
-            <p className="text-xs text-slate-500">Utilization</p>
-            <p className="text-lg font-bold text-slate-900">82%</p>
+            <p className="text-sm font-medium text-slate-700">Finance Lead Coverage</p>
+            <p className="text-xs text-slate-500">In your active club</p>
+            <p className="text-lg font-bold text-slate-900">{financeLeads.length}</p>
           </div>
         </div>
       </section>

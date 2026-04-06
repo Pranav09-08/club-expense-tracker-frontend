@@ -1,19 +1,9 @@
 import { useEffect, useState } from "react";
-import { createMember, listMembers } from "@/api/authAPI";
+import { createMember, listFinanceExpenses, listMembers } from "@/api/authAPI";
 
 export default function Dashboard() {
-  const cards = [
-    { label: "Club Budget", value: "₹85,000" },
-    { label: "Used Budget", value: "₹52,400" },
-    { label: "Pending Requests", value: "7" },
-    { label: "Approved This Month", value: "12" },
-  ];
-
-  const expenses = [
-    { title: "Workshop Components", date: "29 Mar 2026", amount: "₹12,500", status: "Approved" },
-    { title: "Event Posters", date: "27 Mar 2026", amount: "₹2,300", status: "Submitted" },
-    { title: "Speaker Honorarium", date: "24 Mar 2026", amount: "₹8,000", status: "Approved" },
-  ];
+  const [expenses, setExpenses] = useState([]);
+  const [clubStats, setClubStats] = useState({ members: 0, submitted: 0, approved: 0, pending: 0 });
 
   const [activeTab, setActiveTab] = useState("create-member");
   const [members, setMembers] = useState([]);
@@ -34,8 +24,28 @@ export default function Dashboard() {
     }
   };
 
+  const loadExpenses = async () => {
+    try {
+      const res = await listFinanceExpenses();
+      const allExpenses = res?.expenses || [];
+      setExpenses(allExpenses);
+    } catch (err) {
+      setErrorMessage(err.message || "Failed to load expenses");
+    }
+  };
+
+  useEffect(() => {
+    setClubStats({
+      members: members.length,
+      submitted: expenses.filter((item) => String(item.status || "").toUpperCase() === "SUBMITTED").length,
+      approved: expenses.filter((item) => String(item.status || "").toUpperCase() === "APPROVED").length,
+      pending: expenses.filter((item) => String(item.status || "").toUpperCase() === "SUBMITTED").length,
+    });
+  }, [members, expenses]);
+
   useEffect(() => {
     loadMembers();
+    loadExpenses();
   }, []);
 
   const handleCreateMember = async () => {
@@ -55,11 +65,20 @@ export default function Dashboard() {
     }
   };
 
+  const cards = [
+    { label: "Club Members", value: String(clubStats.members) },
+    { label: "Submitted Expenses", value: String(clubStats.submitted) },
+    { label: "Approved Expenses", value: String(clubStats.approved) },
+    { label: "Pending Expenses", value: String(clubStats.pending) },
+  ];
+
+  const latestExpenses = [...expenses].slice(0, 4);
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-slate-900">Club Lead Dashboard</h1>
-        <p className="text-sm text-slate-500">Track club spending, submit requests, and follow approval progress.</p>
+        <p className="text-sm text-slate-500">Track your club's members, expenses, and finance status in one place.</p>
       </div>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -73,26 +92,32 @@ export default function Dashboard() {
 
       <section className="grid gap-4 lg:grid-cols-3">
         <div className="rounded-2xl border bg-white p-5 shadow-sm lg:col-span-2">
-          <h2 className="mb-4 text-lg font-semibold text-slate-900">Recent Expense Requests</h2>
+          <h2 className="mb-4 text-lg font-semibold text-slate-900">Recent Club Expenses</h2>
           <div className="space-y-3">
-            {expenses.map((expense) => (
-              <div key={`${expense.title}-${expense.date}`} className="rounded-xl border bg-slate-50 p-3">
+            {latestExpenses.map((expense) => (
+              <div key={expense.id} className="rounded-xl border bg-slate-50 p-3">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-semibold text-slate-900">{expense.title}</p>
                   <span className="rounded-full bg-white px-2 py-1 text-xs font-medium text-slate-700 border">{expense.status}</span>
                 </div>
-                <p className="mt-1 text-sm text-slate-600">{expense.date} · {expense.amount}</p>
+                <p className="mt-1 text-sm text-slate-600">
+                  {expense.expense_date ? new Date(expense.expense_date).toLocaleDateString() : "-"} · INR {expense.amount}
+                </p>
+                <p className="mt-1 text-xs text-slate-500">Submitted by: {expense.submitted_by_name || expense.submitted_by_email || "-"}</p>
               </div>
             ))}
+            {latestExpenses.length === 0 && (
+              <div className="rounded-xl border bg-slate-50 p-3 text-sm text-slate-600">No expenses submitted yet.</div>
+            )}
           </div>
         </div>
 
         <div className="rounded-2xl border bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-slate-900">Budget Health</h2>
+          <h2 className="mb-4 text-lg font-semibold text-slate-900">Club Summary</h2>
           <div className="space-y-3 text-sm text-slate-600">
-            <div className="rounded-xl border bg-slate-50 p-3">Remaining budget: ₹32,600</div>
-            <div className="rounded-xl border bg-slate-50 p-3">Projected spend (next 2 weeks): ₹18,000</div>
-            <div className="rounded-xl border bg-slate-50 p-3">Safe utilization threshold: 90%</div>
+            <div className="rounded-xl border bg-slate-50 p-3">Active members: {members.length}</div>
+            <div className="rounded-xl border bg-slate-50 p-3">Expenses under review: {clubStats.pending}</div>
+            <div className="rounded-xl border bg-slate-50 p-3">Expenses approved: {clubStats.approved}</div>
           </div>
         </div>
       </section>

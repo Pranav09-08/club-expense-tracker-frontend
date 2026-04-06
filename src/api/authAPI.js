@@ -136,3 +136,43 @@ export async function createMember(payload) {
 export async function listMembers() {
 	return apiRequest("/student-lead/members", { method: "GET" });
 }
+
+export async function createMemberExpense(payload) {
+	return apiRequest("/member/expenses", {
+		method: "POST",
+		body: JSON.stringify(payload),
+	});
+}
+
+export async function listMemberExpenses() {
+	return apiRequest("/member/expenses", { method: "GET" });
+}
+
+export async function createMemberStationeryRequest(payload) {
+	return apiRequest("/member/stationery-requests", {
+		method: "POST",
+		body: JSON.stringify(payload),
+	});
+}
+
+export async function listFinanceExpenses() {
+	return apiRequest("/finance-lead/expenses", { method: "GET" });
+}
+
+export async function decideFinanceExpense(expenseId, payload) {
+	return apiRequest(`/finance-lead/expenses/${expenseId}/decision`, {
+		method: "PATCH",
+		body: JSON.stringify(payload),
+	});
+}
+
+export async function listStationaryRequests() {
+	return apiRequest("/stationary-admin/requests", { method: "GET" });
+}
+
+export async function decideStationaryRequest(requestId, payload) {
+	return apiRequest(`/stationary-admin/requests/${requestId}/decision`, {
+		method: "PATCH",
+		body: JSON.stringify(payload),
+	});
+}

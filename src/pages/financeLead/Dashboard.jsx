@@ -1,16 +1,60 @@
-export default function Dashboard() {
-  const metrics = [
-    { label: "Pending Payouts", value: "14" },
-    { label: "Approved Today", value: "6" },
-    { label: "Monthly Disbursed", value: "₹2,12,300" },
-    { label: "Rejected Claims", value: "3" },
-  ];
+import { useEffect, useMemo, useState } from "react";
+import { listFinanceExpenses } from "@/api/authAPI";
 
-  const payouts = [
-    { ref: "PAY-918", club: "Photography", amount: "₹7,500", due: "02 Apr 2026" },
-    { ref: "PAY-917", club: "Coding", amount: "₹10,200", due: "02 Apr 2026" },
-    { ref: "PAY-915", club: "Dance", amount: "₹4,850", due: "03 Apr 2026" },
-  ];
+export default function Dashboard() {
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const loadExpenses = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await listFinanceExpenses();
+      setExpenses(res?.expenses || []);
+    } catch (err) {
+      setError(err.message || "Failed to load finance data.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadExpenses();
+  }, []);
+
+  const metrics = useMemo(() => {
+    const approved = expenses.filter((item) => String(item.status || "").toUpperCase() === "APPROVED");
+    const pending = expenses.filter((item) => String(item.status || "").toUpperCase() === "SUBMITTED");
+    const rejected = expenses.filter((item) => String(item.status || "").toUpperCase() === "REJECTED");
+    const approvedTotal = approved.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+
+    return [
+      { label: "Pending Approvals", value: String(pending.length) },
+      { label: "Approved Expenses", value: String(approved.length) },
+      { label: "Approved Amount", value: `INR ${approvedTotal.toFixed(2)}` },
+      { label: "Rejected Claims", value: String(rejected.length) },
+    ];
+  }, [expenses]);
+
+  const payouts = useMemo(() => {
+    return expenses.slice(0, 5).map((item) => ({
+      ref: `EXP-${item.id}`,
+      club: item.submitted_by_name || item.submitted_by_email || "Club expense",
+      amount: item.amount ? `INR ${item.amount}` : "-",
+      due: item.submitted_at ? new Date(item.submitted_at).toLocaleDateString() : "-",
+    }));
+  }, [expenses]);
+
+  const totalRequested = useMemo(
+    () => expenses.reduce((sum, item) => sum + Number(item.amount || 0), 0),
+    [expenses]
+  );
+  const approvedTotal = useMemo(
+    () => expenses.filter((item) => String(item.status || "").toUpperCase() === "APPROVED").reduce((sum, item) => sum + Number(item.amount || 0), 0),
+    [expenses]
+  );
+  const variance = Math.max(totalRequested - approvedTotal, 0);
 
   return (
     <div className="space-y-6">
@@ -53,14 +97,17 @@ export default function Dashboard() {
               </tbody>
             </table>
           </div>
+          {!loading && payouts.length === 0 && (
+            <div className="mt-3 rounded-xl border bg-slate-50 p-3 text-sm text-slate-600">No finance entries available yet.</div>
+          )}
         </div>
 
         <div className="rounded-2xl border bg-white p-5 shadow-sm">
           <h2 className="mb-4 text-lg font-semibold text-slate-900">Compliance Checks</h2>
           <div className="space-y-3 text-sm text-slate-600">
-            <div className="rounded-xl border bg-slate-50 p-3">3 claims missing GST invoice</div>
-            <div className="rounded-xl border bg-slate-50 p-3">1 duplicate bill detected in March entries</div>
-            <div className="rounded-xl border bg-slate-50 p-3">Quarterly reconciliation due in 5 days</div>
+            <div className="rounded-xl border bg-slate-50 p-3">Total expense entries: {expenses.length}</div>
+            <div className="rounded-xl border bg-slate-50 p-3">Pending review: {metrics[0].value}</div>
+            <div className="rounded-xl border bg-slate-50 p-3">Rejected records: {metrics[3].value}</div>
           </div>
         </div>
       </section>
@@ -70,18 +117,20 @@ export default function Dashboard() {
         <div className="grid gap-3 md:grid-cols-3">
           <div className="rounded-xl border p-4">
             <p className="text-sm text-slate-600">Requested</p>
-            <p className="text-xl font-bold text-slate-900">₹2,38,900</p>
+            <p className="text-xl font-bold text-slate-900">INR {totalRequested.toFixed(2)}</p>
           </div>
           <div className="rounded-xl border p-4">
             <p className="text-sm text-slate-600">Approved</p>
-            <p className="text-xl font-bold text-slate-900">₹2,12,300</p>
+            <p className="text-xl font-bold text-slate-900">INR {approvedTotal.toFixed(2)}</p>
           </div>
           <div className="rounded-xl border p-4">
             <p className="text-sm text-slate-600">Variance</p>
-            <p className="text-xl font-bold text-slate-900">₹26,600</p>
+            <p className="text-xl font-bold text-slate-900">INR {variance.toFixed(2)}</p>
           </div>
         </div>
       </section>
+
+      {error && <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
     </div>
   );
 }

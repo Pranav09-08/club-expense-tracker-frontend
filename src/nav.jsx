@@ -89,15 +89,16 @@ export const getNavigation = (role) => {
         icon: Wallet,
         items: [
           { label: "Add Expense", to: "/club-lead/add-expense", icon: ClipboardList },
-          { label: "View Expenses", to: "/club-lead/expenses", icon: FileText },
+          { label: "See Expenses", to: "/club-lead/expenses", icon: FileText },
         ],
       },
 
       {
-        group: "Requests",
-        icon: CheckCircle,
+        group: "Members",
+        icon: Users,
         items: [
-          { label: "Pending Approvals", to: "/club-lead/pending", icon: CheckCircle },
+          { label: "Create Member", to: "/club-lead/members/add", icon: ClipboardList },
+          { label: "Manage Members", to: "/club-lead/members", icon: Users },
         ],
       },
 
@@ -161,7 +162,7 @@ export const getNavigation = (role) => {
         group: "Stationary",
         icon: ShoppingCart,
         items: [
-          { label: "Add Request", to: "/stationary/add-request", icon: ClipboardList },
+          { label: "Review Requests", to: "/stationary/add-request", icon: ClipboardList },
           { label: "Manage Inventory", to: "/stationary/inventory", icon: Package },
         ],
       },
